@@ -1,4 +1,6 @@
 <?php
+namespace Imanipuly;
+
 define('image/gif',  'GIF');
 define('image/jpeg', 'JPG');
 define('image/jpg',  'JPG');
@@ -8,11 +10,9 @@ define('image/png',  'PNG');
 
 /**
  * Class to manipulate image, like resize, fill color, rotate and write at image
- * @author Igor A. Carvalho
+ * @author Igor Carvalho <igor822@gmail.com>
  * @version 0.0.1
  * @license MIT License
- * @copyright Copyright (C) 2010 - Open Source Matters. All rights reserved.
- *
  */
 class Imanipuly {
 
