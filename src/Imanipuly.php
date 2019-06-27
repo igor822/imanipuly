@@ -70,13 +70,11 @@ class Imanipuly
      * @param $fileName[optional]
      * @return void
      */
-    public function Imanipuly($fileName = '')
+    public function __construct(string $fileName = '')
     {
         if ($fileName != '') {
             $this->open($fileName);
         }
-
-        return $this;
     }
     
     /**
@@ -84,24 +82,26 @@ class Imanipuly
      * @param $fileName
      * @return void
      */
-    public function open($fileName)
+    public function open($filename): self
     {
-        $this->imageName = $fileName;
+        $this->imageName = $filename;
         
-        $this->imageInfo = $this->getImageInfo($fileName);
+        $this->imageInfo = $this->getImageInfo($filename);
         $this->extension = constant($this->imageInfo['mime']);
         
-        $this->image = $this->load($fileName);
+        $this->image = $this->load($filename);
 
         $this->width = $this->getWidth($this->image);
         $this->height = $this->getHeight($this->image);
+
+        return $this;
     }
 
     /**
      * Clean all objects attributes
      * @return void
      */
-    public function clean()
+    public function clean(): self
     {
         $this->image = null;
         $this->width = 0;
@@ -110,13 +110,15 @@ class Imanipuly
         $this->imageResized = null;
         $this->imageInfo = array();
         $this->scale = array();
+
+        return $this;
     }
     
     /**
      * Init object
      * @return void
      */
-    public function init($image = '')
+    public function init(string $image = ''): self
     {
         $this->clean();
         $this->imageName = (isset($image) && $image != '' ? $image : $this->imageName);
@@ -129,7 +131,7 @@ class Imanipuly
         $this->height = $this->getHeight($this->image);
 
         return $this;
-    }       
+    }
     
     /**
      * Load image to be manipulated, extensions supported, jpg, png and gif
@@ -139,10 +141,18 @@ class Imanipuly
     public function load($image)
     {
         switch ($this->extension) {
-            case 'JPG': $img = imagecreatefromjpeg($image); break;
-            case 'GIF': $img = imagecreatefromgif($image);  break;
-            case 'PNG': $img = imagecreatefrompng($image);  break;
-            default: $img = false; break;
+            case 'JPG':
+                $img = imagecreatefromjpeg($image);
+                break;
+            case 'GIF':
+                $img = imagecreatefromgif($image);
+                break;
+            case 'PNG':
+                $img = imagecreatefrompng($image);
+                break;
+            default:
+                $img = false;
+                break;
         }
         return $img;
     }
@@ -154,7 +164,7 @@ class Imanipuly
      * @param integer $blue
      * @return void
      */
-    public function fillColor($red = 0, $green = 0, $blue = 0)
+    public function fillColor(int $red = 0, int $green = 0, int $blue = 0): self
     {
         $image = $this->getImage();
         $color = imagecolorallocate($image, $red, $green, $blue);
@@ -171,7 +181,7 @@ class Imanipuly
      * @param integer $option
      * @return void
      */
-    public function resize($newWidth, $newHeight, $option = 'auto')
+    public function resize(int $newWidth, int $newHeight, string $option = 'auto'): self
     {
         if ($option == 'scale') {
             $this->setMaxSizes($newWidth, $newHeight);
@@ -182,7 +192,18 @@ class Imanipuly
         $optimalHeight = $optionArray['optimalHeight'];
 
         $this->imageResized = imagecreatetruecolor($optimalWidth, $optimalHeight);
-        imagecopyresampled($this->imageResized, $this->image, 0, 0, 0, 0, $optimalWidth, $optimalHeight, $this->width, $this->height);
+        imagecopyresampled(
+            $this->imageResized,
+            $this->image,
+            0,
+            0,
+            0,
+            0,
+            $optimalWidth,
+            $optimalHeight,
+            $this->width,
+            $this->height
+        );
 
         if ($option == 'crop') {
             $this->crop($optimalWidth, $optimalHeight, $newWidth, $newHeight);
@@ -198,34 +219,36 @@ class Imanipuly
      * @param $colour
      * @return void
      */
-    public function radius($radius = 20)
+    public function radius($radius = 20): self
     {
-        $corner_image = imagecreatetruecolor($radius, $radius);
-        $black = imagecolorallocate($corner_image, 0, 0, 0);
-        $solid_colour = ImageColorAllocate($corner_image, 255, 255, 255);
-        $transparentColor = imagecolorallocate($corner_image, 255, 0, 0);
-        imagecolortransparent( $corner_image, $transparentColor );
-        imagefill($corner_image, 0, 0, $solid_colour);
-        imagefilledellipse($corner_image, $radius, $radius, $radius * 2, $radius * 2, $black);
+        $cornerImage = imagecreatetruecolor($radius, $radius);
+        $black = imagecolorallocate($cornerImage, 0, 0, 0);
+        $solid_colour = ImageColorAllocate($cornerImage, 255, 255, 255);
+        $transparentColor = imagecolorallocate($cornerImage, 255, 0, 0);
+        imagecolortransparent( $cornerImage, $transparentColor );
+        imagefill($cornerImage, 0, 0, $solid_colour);
+        imagefilledellipse($cornerImage, $radius, $radius, $radius * 2, $radius * 2, $black);
         
         // TOP-LEFT
-        imagecolortransparent($corner_image, $transparentColor);
-        imagecopymerge( $this->getImage(), $corner_image, 0, 0, 0, 0, $radius, $radius, 100 );
+        imagecolortransparent($cornerImage, $transparentColor);
+        imagecopymerge($this->getImage(), $cornerImage, 0, 0, 0, 0, $radius, $radius, 100);
         
         // TOP-RIGHT
-        $corner_image = imagerotate( $corner_image, 90, 0 );
-        imagecolortransparent($corner_image, $transparentColor);
-        imagecopymerge( $this->getImage(), $corner_image, 0, $this->height - $radius, 0, 0, $radius, $radius, 100);
+        $cornerImage = imagerotate( $cornerImage, 90, 0 );
+        imagecolortransparent($cornerImage, $transparentColor);
+        imagecopymerge( $this->getImage(), $cornerImage, 0, $this->height - $radius, 0, 0, $radius, $radius, 100);
         
         // BOTTOM-LEFT
-        $corner_image = imagerotate( $corner_image, 90, 0 );
-        imagecolortransparent($corner_image, $transparentColor);
-        imagecopymerge( $this->getImage(), $corner_image, $this->width - $radius, $this->height - $radius, 0, 0, $radius, $radius, 100 );
+        $cornerImage = imagerotate( $cornerImage, 90, 0 );
+        imagecolortransparent($cornerImage, $transparentColor);
+        imagecopymerge($this->getImage(), $cornerImage, $this->width - $radius, $this->height - $radius, 0, 0, $radius, $radius, 100);
         
         // BOTTOM-RIGHT
-        $corner_image = imagerotate( $corner_image, 90, 0 );
-        imagecolortransparent($corner_image, $transparentColor);
-        imagecopymerge( $this->getImage(), $corner_image, $this->width - $radius, 0, 0, 0, $radius, $radius, 100 );             
+        $cornerImage = imagerotate( $cornerImage, 90, 0 );
+        imagecolortransparent($cornerImage, $transparentColor);
+        imagecopymerge( $this->getImage(), $cornerImage, $this->width - $radius, 0, 0, 0, $radius, $radius, 100 );             
+
+        return $this;
     }
     
     /**
@@ -235,7 +258,7 @@ class Imanipuly
      * @param integer  $option
      * @return array
      */
-    private function getDimensions($newWidth, $newHeight, $option)
+    private function getDimensions($newWidth, $newHeight, $option): array
     {
         switch($option) {
             case 'exact':
@@ -270,10 +293,11 @@ class Imanipuly
      * @param integer $newHeight
      * @return integer
      */
-    private function getSizeByFixedHeight($newHeight)
+    private function getSizeByFixedHeight(int $newHeight): int
     {
         $ratio = $this->width / $this->height;
         $newWidth = $newHeight * $ratio;
+
         return $newWidth;
     }
 
@@ -282,10 +306,11 @@ class Imanipuly
      * @param integer $newWidth
      * @return integer
      */
-    private function getSizeByFixedWidth($newWidth)
+    private function getSizeByFixedWidth(int $newWidth): int
     {
         $ratio = $this->height / $this->width;
         $newHeight = $newWidth * $ratio;
+
         return $newHeight;
     }
 
@@ -295,7 +320,7 @@ class Imanipuly
      * @param integer $newHeight
      * @return array
      */
-    private function getSizeByAuto($newWidth, $newHeight)
+    private function getSizeByAuto(int $newWidth, int $newHeight): array
     {
         if ($this->height < $this->width) {
             $optimalWidth = $newWidth;
@@ -347,7 +372,7 @@ class Imanipuly
      * @param integer $newHeight
      * @return void
      */
-    private function crop($optimalWidth, $optimalHeight, $newWidth, $newHeight)
+    private function crop($optimalWidth, $optimalHeight, $newWidth, $newHeight): self
     {
         $cropStartX = ($optimalWidth / 2) - ($newWidth / 2);
         $cropStartY = ($optimalHeight / 2) - ($newHeight / 2);
@@ -356,6 +381,8 @@ class Imanipuly
 
         $this->imageResized = imagecreatetruecolor($newWidth, $newHeight);
         imagecopyresampled($this->getImage(), $crop, 0, 0, $cropStartX, $cropStartY, $newWidth, $newHeight, $newWidth, $newHeight);
+
+        return $this;
     }
 
     /**
@@ -364,7 +391,7 @@ class Imanipuly
      * @param integer $imageQuality
      * @return void
      */
-    public function save($savePath, $type = 'jpg', $imageQuality = 100)
+    public function save($savePath, string $type = 'jpg', int $imageQuality = 100): self
     {
         switch (strtoupper($type)) {
             case 'JPG':
@@ -386,6 +413,7 @@ class Imanipuly
             break;
         }
         imagedestroy($this->getImage());
+
         return $this;
     }
 
@@ -397,9 +425,15 @@ class Imanipuly
     {
         header('Content-type: '.$this->imageInfo['mime']);
         switch ($this->extension) {
-            case 'JPG': imagejpeg($this->getImage()); break;
-            case 'GIF': imagegif($this->getImage());  break;
-            case 'PNG': imagepng($this->getImage());  break;
+            case 'JPG':
+                imagejpeg($this->getImage());
+                break;
+            case 'GIF':
+                imagegif($this->getImage());
+                break;
+            case 'PNG':
+                imagepng($this->getImage());
+                break;
         }
 
         return $this;
@@ -411,10 +445,11 @@ class Imanipuly
      * @param integer $yPoint
      * @return array
      */
-    public function getPixelColor($xPoint, $yPoint)
+    public function getPixelColor(int $xPoint, int $yPoint): self
     {
         $rgb = imagecolorat($this->getImage(), $xPoint, $yPoint);
         $colors = imagecolorsforindex($this->getImage(), $rgb);
+
         return $colors;
     }
 
@@ -427,10 +462,27 @@ class Imanipuly
      * @param array $color
      * @return void
      */
-    public function write($xPoint = 0, $yPoint = 0, $string, $fontSize, $color)
+    public function write($xPoint = 0, $yPoint = 0, $string, $fontSize, $color): self
     {
         $textColor = imagecolorallocate($this->getImage(), $color['red'], $color['green'], $color['blue']);
         imagestring($this->getImage(), $fontSize, $xPoint, $yPoint, $string, $textColor);
+
+        return $this;
+    }
+
+    /**
+     * Insert some string at image point with font
+     * @param integer $xPoint
+     * @param integer $yPoint
+     * @param string $string
+     * @param integer $fontSize
+     * @param array $color
+     * @return void
+     */
+    public function writeWithFont(int $xPoint = 0, int $yPoint = 0, string $string, $font, int $fontSize, array $color): self
+    {
+        $textColor = imagecolorallocate($this->getImage(), $color['red'], $color['green'], $color['blue']);
+        imagettftext($this->getImage(), $fontSize, 0, $xPoint, $yPoint, $textColor, $font, $string);
 
         return $this;
     }
@@ -441,7 +493,7 @@ class Imanipuly
      * @param string $type
      * @return void
      */
-    public function separeChannels($channel, $type = 'grey')
+    public function separeChannels($channel, $type = 'grey'): self
     {
         for ($i = 0; $i < $this->width; $i++) {
             for($ii = 0; $ii < $this->height; $ii++) {
@@ -481,10 +533,12 @@ class Imanipuly
      * @param integer $degrees
      * @return void
      */
-    public function rotate($degrees)
+    public function rotate($degrees): self
     {
         $image = $this->getImage();
         $this->imageResized = imagerotate($image, $degrees, 0);
+
+        return $this;
     }
 
     /**
@@ -493,9 +547,17 @@ class Imanipuly
      */
     private function getImage()
     {
-        if(isset($this->imageResized)) $image = $this->imageResized;
-        else $image = $this->image;
+        $image = $this->image;
+        if (isset($this->imageResized)) {
+            $image = $this->imageResized;
+        }
+
         return $image;
+    }
+
+    public function flip($mode = IMG_FLIP_VERTICAL)
+    {
+        imageflip($this->getImage(), $mode);
     }
 
     /**
@@ -541,4 +603,34 @@ class Imanipuly
 
         return $this;
     } 
+
+    /**
+     * @see (http://www.php.net/manual/en/function.imagefilter.php)
+     * @param int $fileType
+     * @param int $arg1
+     * @param int $arg2
+     * @param int $arg3
+     * @param int $arg4
+     */
+    public function filter($filterType, $arg1 = null, $arg2 = null, $arg3 = null, $arg4 = null)
+    {
+        if ($filterType == IMG_FILTER_COLORIZE) {
+            imagefilter($this->getImage(), $filterType, $arg1, $arg2, $arg3, $arg4);
+        } elseif ($filterType == IMG_FILTER_BRIGHTNESS || $filterType == IMG_FILTER_CONTRAST || $filterType == IMG_FILTER_SMOOTH) {
+            imagefilter($this->getImage(), $filterType, $arg1);
+        } elseif ($filterType == IMG_FILTER_PIXELATE) {
+            imagefilter($this->getImage(), $filterType, $arg1, $arg2);
+        } else {
+            imagefilter($this->getImage(), $filterType);
+        }
+
+        return $this;
+    }
+
+    public function blurImage(int $level = 10)
+    {
+        for ($i = 1; $i <= $level; $i++) {
+            $this->filter(IMG_FILTER_GAUSSIAN_BLUR);
+        }
+    }
 }
