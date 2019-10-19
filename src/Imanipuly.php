@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Imanipuly;
 
@@ -34,6 +35,18 @@ class Imanipuly
      * @var integer
      */
     private $height = 0;
+
+    /**
+     * Width of image
+     * @var integer
+     */
+    private $newWidth = 0;
+
+    /**
+     * Height of image
+     * @var integer
+     */
+    private $newHeight = 0;
 
     /**
      * Extension of image
@@ -82,7 +95,7 @@ class Imanipuly
      * @param $fileName
      * @return void
      */
-    public function open($filename): self
+    public function open(string $filename): self
     {
         $this->imageName = $filename;
         
@@ -138,7 +151,7 @@ class Imanipuly
      * @param string $image
      * @return object
      */
-    public function load($image)
+    public function load(string $image)
     {
         switch ($this->extension) {
             case 'JPG':
@@ -188,10 +201,10 @@ class Imanipuly
         }
         $optionArray = $this->getDimensions($newWidth, $newHeight, strtolower($option));
 
-        $optimalWidth = $optionArray['optimalWidth'];
-        $optimalHeight = $optionArray['optimalHeight'];
+        $this->newWidth = $optimalWidth = $optionArray['optimalWidth'];
+        $this->newHeight = $optimalHeight = $optionArray['optimalHeight'];
 
-        $this->imageResized = imagecreatetruecolor($optimalWidth, $optimalHeight);
+        $this->imageResized = imagecreatetruecolor((int) $optimalWidth, (int) $optimalHeight);
         imagecopyresampled(
             $this->imageResized,
             $this->image,
@@ -199,10 +212,10 @@ class Imanipuly
             0,
             0,
             0,
-            $optimalWidth,
-            $optimalHeight,
-            $this->width,
-            $this->height
+            (int) $optimalWidth,
+            (int) $optimalHeight,
+            (int) $this->width,
+            (int) $this->height
         );
 
         if ($option == 'crop') {
@@ -219,7 +232,7 @@ class Imanipuly
      * @param $colour
      * @return void
      */
-    public function radius($radius = 20): self
+    public function radius(int $radius = 20): self
     {
         $cornerImage = imagecreatetruecolor($radius, $radius);
         $black = imagecolorallocate($cornerImage, 0, 0, 0);
@@ -255,10 +268,10 @@ class Imanipuly
      * Get dimensions by option selected
      * @param integer $newWidth
      * @param integer $newHeight
-     * @param integer  $option
+     * @param string  $option
      * @return array
      */
-    private function getDimensions($newWidth, $newHeight, $option): array
+    private function getDimensions(int $newWidth, int $newHeight, string $option): array
     {
         switch($option) {
             case 'exact':
@@ -293,7 +306,7 @@ class Imanipuly
      * @param integer $newHeight
      * @return integer
      */
-    private function getSizeByFixedHeight(int $newHeight): int
+    private function getSizeByFixedHeight(int $newHeight): float
     {
         $ratio = $this->width / $this->height;
         $newWidth = $newHeight * $ratio;
@@ -306,7 +319,7 @@ class Imanipuly
      * @param integer $newWidth
      * @return integer
      */
-    private function getSizeByFixedWidth(int $newWidth): int
+    private function getSizeByFixedWidth(int $newWidth): float
     {
         $ratio = $this->height / $this->width;
         $newHeight = $newWidth * $ratio;
@@ -349,7 +362,7 @@ class Imanipuly
      * @param integer $newHeight
      * @return array
      */
-    private function getOptimalCrop($newWidth, $newHeight)
+    private function getOptimalCrop(int $newWidth, int $newHeight)
     {
         $heightRatio = $this->height / $this->width;
         $widthRatio = $this->width / $this->height;
@@ -372,7 +385,7 @@ class Imanipuly
      * @param integer $newHeight
      * @return void
      */
-    private function crop($optimalWidth, $optimalHeight, $newWidth, $newHeight): self
+    private function crop(int $optimalWidth, int $optimalHeight, int $newWidth, int $newHeight): self
     {
         $cropStartX = ($optimalWidth / 2) - ($newWidth / 2);
         $cropStartY = ($optimalHeight / 2) - ($newHeight / 2);
@@ -479,8 +492,14 @@ class Imanipuly
      * @param array $color
      * @return void
      */
-    public function writeWithFont(int $xPoint = 0, int $yPoint = 0, string $string, $font, int $fontSize, array $color): self
-    {
+    public function writeWithFont(
+        int $xPoint = 0,
+        int $yPoint = 0,
+        string $string,
+        string $font,
+        int $fontSize,
+        array $color
+    ): self {
         $textColor = imagecolorallocate($this->getImage(), $color['red'], $color['green'], $color['blue']);
         imagettftext($this->getImage(), $fontSize, 0, $xPoint, $yPoint, $textColor, $font, $string);
 
@@ -632,5 +651,44 @@ class Imanipuly
         for ($i = 1; $i <= $level; $i++) {
             $this->filter(IMG_FILTER_GAUSSIAN_BLUR);
         }
+    }
+
+    public function writeFoot(
+        string $string,
+        int $fontSize,
+        array $color,
+        string $font
+    ): void {
+        echo $string . PHP_EOL;
+
+        $getXPointNew = function(string $str, int $fontSize) {
+            $strSize = strlen($str);
+            preg_match_all('/([A-Z])/', $str, $matches);
+            $capitalLetters = count($matches);
+
+            $xPoint = $strSize * 0.133;
+            $xPoint = $strSize * ($fontSize * 0.133);
+            $xPoint = $strSize * 1.33;
+
+            echo 'XPoint: ' . $xPoint . PHP_EOL;
+            return $xPoint;
+        };
+
+        $height = $this->newHeight > 0 ? $this->newHeight : $this->getHeight($this->getImage());
+        $width = $this->newWidth > 0 ? $this->newHeight : $this->getWidth($this->getImage());
+        $yPoint = $height - $fontSize;
+        $xPoint = (int) $width - (float) $getXPointNew($string, $fontSize);
+
+        echo 'Width ' . $width . PHP_EOL;
+        echo 'XPoint Calculated: ' . $xPoint . PHP_EOL;
+
+        $this->writeWithFont(
+            intval(floor($xPoint)),
+            intval(floor($yPoint)),
+            $string,
+            $font,
+            $fontSize,
+            $color
+        );
     }
 }
