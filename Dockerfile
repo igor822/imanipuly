@@ -10,11 +10,16 @@ RUN apk add --update --no-cache \
         libpng-dev \
     && docker-php-ext-configure gd --with-jpeg=/usr/include/ --with-freetype=/usr/include/ \
     && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" gd
-    
-#RUN apk add --update --no-cache autoconf g++ imagemagick imagemagick-dev libtool make pcre-dev \
-#    && pecl install imagick \
-#    && docker-php-ext-enable imagick \
-#    && apk del autoconf g++ libtool make pcre-dev
+
+RUN apk add --no-cache git imagemagick
+RUN  apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS imagemagick-dev libtool \
+     && git clone https://github.com/Imagick/imagick \
+     && cd imagick \
+     && phpize && ./configure \
+     && make \
+     && make install \
+     && apk del .phpize-deps && rm -rf imagick
+RUN echo "extension=imagick.so" >> /usr/local/etc/php/conf.d/imagick.ini
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

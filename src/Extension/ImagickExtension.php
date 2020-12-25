@@ -36,7 +36,7 @@ class ImagickExtension implements ExtensionInterface
         return $this;
     }
     
-    public function save(string $filename): self
+    public function save($filename, string $type = 'jpg', int $imageQuality = 100): self
     {
         $this->image->writeImage($filename);
         
@@ -49,6 +49,8 @@ class ImagickExtension implements ExtensionInterface
     public function filter($filterType): self
     {
         $this->image->setImageType($filterType);
+        
+        return $this;
     }
     
     /**
@@ -100,5 +102,10 @@ class ImagickExtension implements ExtensionInterface
                 $this->image->transverseImage();
                 break;
         }
+    }
+    
+    public function crop(int $optimalWidth, int $optimalHeight, int $newWidth, int $newHeight): self
+    {
+        return $this;
     }
 }
