@@ -1,18 +1,18 @@
 Imanipuly
 =========
 
-Library to manipulate image with GD library.
+Library to manipulate image with GD or Imagick library.
 
 ## Installation
 
-```
-$ composer require igor822/imanipuly
+```sh
+composer require igor822/imanipuly
 ```
 
 ### Docker build
 
-```
-$ docker build -t imanipuly .
+```sh
+docker build -t imanipuly .
 ```
 
 ## Example
@@ -35,6 +35,6 @@ $imanipuly->save('image1.jpg');
 
 Using docker you can execute the examples in `examples/` folder
 
-```
-$ docker run -v $(pwd):/var/www -it imanipuly php examples/example1.php
+```sh
+docker run -v $(pwd):/var/www -it imanipuly php examples/example1.php
 ```
