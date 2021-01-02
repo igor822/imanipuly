@@ -60,8 +60,9 @@ class Imanipuly
         int $fontSize,
         array $color,
         int $xPoint = 0,
-        int $yPoint = 0
+        int $yPoint = 0,
+        int $gravity = 0
     ): ExtensionInterface {
-        return $this->extension->writeWithFont($string, $font, $fontSize, $color, $xPoint, $yPoint);
+        return $this->extension->writeWithFont($string, $font, $fontSize, $color, $xPoint, $yPoint, $gravity);
     }
 }

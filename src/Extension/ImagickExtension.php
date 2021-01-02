@@ -69,7 +69,7 @@ class ImagickExtension implements ExtensionInterface
         array $color,
         int $xPoint = 0,
         int $yPoint = 0,
-        
+        int $gravity = \Imagick::GRAVITY_CENTER 
     ): self {
         $imagickPixel = new \ImagickPixel(sprintf('rgb(%d, %d, %d)', $color['red'], $color['green'], $color['blue']));
         
@@ -79,7 +79,7 @@ class ImagickExtension implements ExtensionInterface
      
         $draw->setStrokeWidth(0);
         $draw->setFontSize($fontSize);
-        $draw->setGravity(\Imagick::GRAVITY_SOUTHWEST);
+        $draw->setGravity($gravity);
         
         $draw->setFont($font);
         $this->image->annotateimage($draw, $xPoint, $yPoint, 0, $string);
