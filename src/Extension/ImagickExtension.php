@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Imanipuly\Extension;
 
@@ -36,7 +36,7 @@ class ImagickExtension implements ExtensionInterface
         return $this;
     }
     
-    public function save($filename, string $type = 'jpg', int $imageQuality = 100): self
+    public function save(string $filename, string $type = 'jpg', int $imageQuality = 100): self
     {
         $this->image->writeImage($filename);
         
@@ -46,22 +46,13 @@ class ImagickExtension implements ExtensionInterface
     /**
      * @see https://www.php.net/manual/en/imagick.setimagetype.php 
      */
-    public function filter($filterType): self
+    public function filter(int $filterType, ?int $arg1 = null, ?int $arg2 = null, ?int $arg3 = null, ?int $arg4 = null): self
     {
         $this->image->setImageType($filterType);
         
         return $this;
     }
     
-    /**
-     * Insert some string at image point with font
-     * @param integer $xPoint
-     * @param integer $yPoint
-     * @param string $string
-     * @param integer $fontSize
-     * @param array $color
-     * @return void
-     */
     public function writeWithFont(
         string $string,
         string $font,

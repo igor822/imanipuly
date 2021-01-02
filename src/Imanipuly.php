@@ -20,12 +20,7 @@ define('image/png',  'PNG');
 class Imanipuly
 {
     private ExtensionInterface $extension;
-    
-    /**
-     * Construct, set the path name of file to manipulate
-     * @param $fileName[optional]
-     * @return void
-     */
+
     public function __construct(ExtensionInterface $extension, string $fileName = '')
     {
         $this->extension = $extension;

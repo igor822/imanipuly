@@ -4,71 +4,26 @@ namespace Imanipuly\Extension;
 
 class GdExtension implements ExtensionInterface
 {
-    /**
-     * Image path name
-     * @var string
-     */
     private ?\GdImage $image = null;
 
-    /**
-     * Width of image
-     * @var integer
-     */
     private int $width = 0;
 
-    /**
-     * Height of image
-     * @var integer
-     */
     private int $height = 0;
 
-    /**
-     * Width of image
-     * @var integer
-     */
     private int $newWidth = 0;
 
-    /**
-     * Height of image
-     * @var integer
-     */
     private int $newHeight = 0;
 
-    /**
-     * Extension of image
-     * @var string
-     */
     private string $extension = '';
 
-    /**
-     * Image to be manilulated, more expecific resized
-     * @var object
-     */
     private ?object $imageResized = null;
 
-    /**
-     * Array of information of image, dimensions and mime type
-     * @var array
-     */
     private array $imageInfo = [];
 
-    /**
-     * Array of max sizes of image to resize
-     * @var array
-     */
     private array $scale = [];
 
-    /**
-     * Record image name
-     * @var string
-     */
     private string $imageName = '';
-    
-    /**
-     * Open image to initializethe process
-     * @param $fileName
-     * @return void
-     */
+
     public function open(string $filename): self
     {
         $this->imageName = $filename;
@@ -83,13 +38,8 @@ class GdExtension implements ExtensionInterface
 
         return $this;
     }
-    
-    /**
-     * Load image to be manipulated, extensions supported, jpg, png and gif
-     * @param string $image
-     * @return object
-     */
-    public function load(string $image)
+
+    public function load(string $image): mixed
     {
         switch ($this->extension) {
             case 'JPG':
@@ -107,11 +57,7 @@ class GdExtension implements ExtensionInterface
         }
         return $img;
     }
-    
-    /**
-     * Clean all objects attributes
-     * @return void
-     */
+
     public function clean(): self
     {
         $this->image = null;
@@ -124,15 +70,11 @@ class GdExtension implements ExtensionInterface
 
         return $this;
     }
-    
-    /**
-     * Init object
-     * @return void
-     */
+
     public function init(string $image = ''): self
     {
         $this->clean();
-        $this->imageName = (isset($image) && $image != '' ? $image : $this->imageName);
+        $this->imageName = (!empty($image) && $image != '' ? $image : $this->imageName);
         $this->imageInfo = $this->getImageInfo($this->imageName);
         $this->extension = constant($this->imageInfo['mime']);
         
@@ -144,13 +86,6 @@ class GdExtension implements ExtensionInterface
         return $this;
     }
 
-    /**
-     * Fill background color, with rgb code
-     * @param integer $red
-     * @param integer $green
-     * @param integer $blue
-     * @return void
-     */
     public function fillColor(int $red = 0, int $green = 0, int $blue = 0): self
     {
         $image = $this->getImage();
@@ -160,14 +95,6 @@ class GdExtension implements ExtensionInterface
         return $this;
     }
 
-    /**
-     * Rezise image with some options to bo readed
-     * Options (auto, portrait, scale, exact)
-     * @param integer $newWidth
-     * @param integer $newHeight
-     * @param integer $option
-     * @return void
-     */
     public function resize(int $newWidth, int $newHeight, string $option = 'auto'): self
     {
         if ($option == 'scale') {
@@ -200,12 +127,6 @@ class GdExtension implements ExtensionInterface
     }
 
     // TODO Fix method to render transparent border and read diverent corners
-    /**
-     * Round corners, fill corners color border
-     * @param $radius
-     * @param $colour
-     * @return void
-     */
     public function radius(int $radius = 20): self
     {
         $cornerImage = imagecreatetruecolor($radius, $radius);
@@ -247,6 +168,7 @@ class GdExtension implements ExtensionInterface
      */
     private function getDimensions(int $newWidth, int $newHeight, string $option): array
     {
+        $optimalHeight = $optimalWidth = 0;
         switch($option) {
             case 'exact':
                 $optimalWidth = $newWidth;
@@ -275,11 +197,6 @@ class GdExtension implements ExtensionInterface
         return array('optimalWidth' => $optimalWidth, 'optimalHeight' => $optimalHeight);
     }
 
-    /**
-     * Get height size defined by width
-     * @param integer $newHeight
-     * @return integer
-     */
     private function getSizeByFixedHeight(int $newHeight): float
     {
         $ratio = $this->width / $this->height;
@@ -288,11 +205,6 @@ class GdExtension implements ExtensionInterface
         return $newWidth;
     }
 
-    /**
-     * Get width size defined by height
-     * @param integer $newWidth
-     * @return integer
-     */
     private function getSizeByFixedWidth(int $newWidth): float
     {
         $ratio = $this->height / $this->width;
@@ -301,12 +213,6 @@ class GdExtension implements ExtensionInterface
         return $newHeight;
     }
 
-    /**
-     * Get width and height defined by actual dimensions
-     * @param integer $newWidth
-     * @param integer $newHeight
-     * @return array
-     */
     private function getSizeByAuto(int $newWidth, int $newHeight): array
     {
         if ($this->height < $this->width) {
@@ -351,14 +257,6 @@ class GdExtension implements ExtensionInterface
         return ['optimalWidth' => $optimalWidth, 'optimalHeight' => $optimalHeight];
     }
 
-    /**
-     * Method defined to crop image by dimensions seted
-     * @param integer $optimalWidth
-     * @param integer $optimalHeight
-     * @param integer $newWidth
-     * @param integer $newHeight
-     * @return void
-     */
     public function crop(int $optimalWidth, int $optimalHeight, int $newWidth, int $newHeight): self
     {
         $cropStartX = ($optimalWidth / 2) - ($newWidth / 2);
@@ -372,30 +270,24 @@ class GdExtension implements ExtensionInterface
         return $this;
     }
 
-    /**
-     * Method defined to save image at the path and quality setting
-     * @param integer $savePath
-     * @param integer $imageQuality
-     * @return void
-     */
-    public function save($savePath, string $type = 'jpg', int $imageQuality = 100): self
+    public function save(string $savePath, string $type = 'jpg', int $imageQuality = 100): self
     {
         switch (strtoupper($type)) {
             case 'JPG':
                 if(imagetypes() & IMG_JPG) {
-                    imagejpeg($this->getImage(), $savePath, $imageQuality);
+                    \imagejpeg($this->getImage(), $savePath, $imageQuality);
                 }
             break;
             case 'GIF':
                 if(imagetypes() & IMG_GIF) {
-                    imagegif($this->getImage(), $savePath);
+                    \imagegif($this->getImage(), $savePath);
                 }
             break;
             case 'PNG':
                 $scaleQuality = round(($imageQuality/100) * 9);
                 $invertScaleQuality = 9 - $scaleQuality;
                 if(imagetypes() & IMG_PNG) {
-                    imagepng($this->getImage(), $savePath, $invertScaleQuality);
+                    \imagepng($this->getImage(), $savePath, $invertScaleQuality);
                 }
             break;
         }
@@ -404,35 +296,25 @@ class GdExtension implements ExtensionInterface
         return $this;
     }
 
-    /**
-     * Show image at broser without save file
-     * @return void
-     */
-    public function show()
+    public function show(): self
     {
         header('Content-type: '.$this->imageInfo['mime']);
         switch ($this->extension) {
             case 'JPG':
-                imagejpeg($this->getImage());
+                \imagejpeg($this->getImage());
                 break;
             case 'GIF':
-                imagegif($this->getImage());
+                \imagegif($this->getImage());
                 break;
             case 'PNG':
-                imagepng($this->getImage());
+                \imagepng($this->getImage());
                 break;
         }
 
         return $this;
     }
 
-    /**
-     * Get RGB color at determinated pixel (x and y coordinates)
-     * @param integer $xPoint
-     * @param integer $yPoint
-     * @return array
-     */
-    public function getPixelColor(int $xPoint, int $yPoint): self
+    public function getPixelColor(int $xPoint, int $yPoint): array
     {
         $rgb = imagecolorat($this->getImage(), $xPoint, $yPoint);
         $colors = imagecolorsforindex($this->getImage(), $rgb);
@@ -440,15 +322,6 @@ class GdExtension implements ExtensionInterface
         return $colors;
     }
 
-    /**
-     * Insert some string at image point
-     * @param integer $xPoint
-     * @param integer $yPoint
-     * @param string $string
-     * @param integer $fontSize
-     * @param array $color
-     * @return void
-     */
     public function write(string $string, int $fontSize, array $color, int $xPoint = 0, int $yPoint = 0): self
     {
         $textColor = imagecolorallocate($this->getImage(), $color['red'], $color['green'], $color['blue']);
@@ -457,22 +330,14 @@ class GdExtension implements ExtensionInterface
         return $this;
     }
 
-    /**
-     * Insert some string at image point with font
-     * @param integer $xPoint
-     * @param integer $yPoint
-     * @param string $string
-     * @param integer $fontSize
-     * @param array $color
-     * @return void
-     */
     public function writeWithFont(
         string $string,
         string $font,
         int $fontSize,
         array $color,
         int $xPoint = 0,
-        int $yPoint = 0
+        int $yPoint = 0,
+        int $gravity = 0
     ): self {
         $textColor = imagecolorallocate($this->getImage(), $color['red'], $color['green'], $color['blue']);
         imagettftext($this->getImage(), $fontSize, 0, $xPoint, $yPoint, $textColor, $font, $string);
@@ -480,14 +345,9 @@ class GdExtension implements ExtensionInterface
         return $this;
     }
 
-    /**
-     * Get image with grey or colors RGB channels defined
-     * @param string $channel
-     * @param string $type
-     * @return void
-     */
-    public function separeChannels($channel, $type = 'grey'): self
+    public function separeChannels(string $channel, string $type = 'grey'): self
     {
+        $new = $px = $i = $ii = 0;
         for ($i = 0; $i < $this->width; $i++) {
             for($ii = 0; $ii < $this->height; $ii++) {
                 $rgb = imagecolorat($this->getImage(), $i, $ii);
@@ -521,11 +381,6 @@ class GdExtension implements ExtensionInterface
         return $this;
     }
 
-    /**
-     * Method defined to rotate image
-     * @param integer $degrees
-     * @return void
-     */
     public function rotate(int $degrees): self
     {
         $image = $this->getImage();
@@ -553,43 +408,22 @@ class GdExtension implements ExtensionInterface
         imageflip($this->getImage(), $mode);
     }
 
-    /**
-     * Get width of image
-     * @param string $image
-     * @return integer
-     */
-    public function getWidth($image)
+    public function getWidth(\GdImage $image): int
     {
         return imagesx($image);
     }
 
-    /**
-     * Get height of image
-     * @param string $image
-     * @return integer
-     */
-    public function getHeight($image)
+    public function getHeight(\GdImage $image): int
     {
         return imagesy($image);
     }
 
-    /**
-     * Get array of image info, like dimensions and mime-type
-     * @param string $image
-     * @return array
-     */
-    private function getImageInfo($image)
+    private function getImageInfo(string $image): array
     {
         return getimagesize($image);
     }
 
-    /**
-     * Determine max sizes to resize image
-     * @param integer $maxWidth
-     * @param integer $maxHeigh
-     * @return void
-     */
-    public function setMaxSizes($maxWidth = 0, $maxHeight = 0)
+    public function setMaxSizes(int $maxWidth = 0, int $maxHeight = 0): self
     {
         $this->scale['maxWidth'] = ($maxWidth > 0) ? $maxWidth : $this->width;
         $this->scale['maxHeight'] = ($maxHeight > 0) ? $maxHeight : $this->height;
@@ -599,13 +433,8 @@ class GdExtension implements ExtensionInterface
 
     /**
      * @see (http://www.php.net/manual/en/function.imagefilter.php)
-     * @param int $fileType
-     * @param int $arg1
-     * @param int $arg2
-     * @param int $arg3
-     * @param int $arg4
      */
-    public function filter($filterType, $arg1 = null, $arg2 = null, $arg3 = null, $arg4 = null)
+    public function filter(int $filterType, $arg1 = null, $arg2 = null, $arg3 = null, $arg4 = null)
     {
         if ($filterType == IMG_FILTER_COLORIZE) {
             imagefilter($this->getImage(), $filterType, $arg1, $arg2, $arg3, $arg4);
