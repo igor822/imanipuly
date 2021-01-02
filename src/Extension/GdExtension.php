@@ -589,7 +589,7 @@ class GdExtension implements ExtensionInterface
      * @param integer $maxHeigh
      * @return void
      */
-    public function setMaxSizes($maxWidth = 0, $maxHeigh = 0)
+    public function setMaxSizes($maxWidth = 0, $maxHeight = 0)
     {
         $this->scale['maxWidth'] = ($maxWidth > 0) ? $maxWidth : $this->width;
         $this->scale['maxHeight'] = ($maxHeight > 0) ? $maxHeight : $this->height;

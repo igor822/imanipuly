@@ -7,16 +7,19 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Imanipuly\Imanipuly;
+use Imanipuly\Extension\GdExtension;
+use Imanipuly\Extension\ImagickExtension;
 
-$imanipuly = new Imanipuly('image1.jpg');
+$imanipuly = new Imanipuly(new ImagickExtension(), 'examples/image1.jpg');
 $imanipuly->resize(500, 500);
-$imanipuly->filter(IMG_FILTER_GRAYSCALE);
+//$imanipuly->filter(IMG_FILTER_GRAYSCALE);
+$imanipuly->filter(\Imagick::IMGTYPE_GRAYSCALE);
 $imanipuly->writeWithFont(
-    100,
-    100,
     'Teste 123',
-    'IndieFlower.ttf',
+    'examples/IndieFlower.ttf',
     40,
-    ['red' => 176, 'green' => 191, 'blue' => 26]
+    ['red' => 176, 'green' => 191, 'blue' => 26],
+    10,
+    10
 );
 $imanipuly->save('image1-resized.jpg');

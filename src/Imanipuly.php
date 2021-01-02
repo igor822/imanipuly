@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace Imanipuly;
 
@@ -15,7 +14,7 @@ define('image/png',  'PNG');
 /**
  * Class to manipulate image, like resize, fill color, rotate and write at image
  * @author Igor Carvalho <igor822@gmail.com>
- * @version 0.0.1
+ * @version 2.0.0
  * @license MIT License
  */
 class Imanipuly

@@ -89,7 +89,7 @@ class ImagickExtension implements ExtensionInterface
 
     public function rotate(int $degrees): self
     {
-        $imagick->rotateImage(new ImagickPixel('#00000000'), $degrees);
+        $this->image->rotateImage(new \ImagickPixel('#00000000'), $degrees);
         
         return $this;
     }
@@ -105,7 +105,7 @@ class ImagickExtension implements ExtensionInterface
                 break;
         }
     }
-    
+
     public function crop(int $optimalWidth, int $optimalHeight, int $newWidth, int $newHeight): self
     {
         return $this;
