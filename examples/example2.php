@@ -1,9 +1,5 @@
 <?php
 
-/*
- * Test to rotate image
- */
-
 require __DIR__ . '/../vendor/autoload.php';
 
 use Imanipuly\Imanipuly;
@@ -31,13 +27,13 @@ $imanipuly->writeWithFont(
     10,
     \Imagick::GRAVITY_SOUTHEAST
 );
-$imanipuly->writeWithFont(
-    'Lorem Ipsum',
+$imanipuly->writeFitWithFont(
+    'Se ouvires atentamente a voz do Senhor teu Deus, tendo cuidado de guardar todos os seus mandamentos que eu hoje te ordeno, o Senhor teu Deus te exaltará sobre todas as nações da terra;"',
     'examples/Stylish-Regular.ttf',
-    20,
+    50,
     ['red' => 255, 'green' => 0, 'blue' => 0],
-    10,
-    10,
+    0,
+    50,
     \Imagick::GRAVITY_CENTER
 );
 $imanipuly->save('image1-gravity.jpg');

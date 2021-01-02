@@ -24,6 +24,8 @@ class ImagickExtension implements ExtensionInterface
 
     public function resize(int $newWidth, int $newHeight, string $option = 'auto'): self
     {
+        $this->width = $newWidth;
+        $this->height = $newHeight;
         $this->image->resizeImage($newWidth, $newHeight, \Imagick::FILTER_SINC, 0);
         
         return $this;
@@ -75,6 +77,87 @@ class ImagickExtension implements ExtensionInterface
         $draw->setFont($font);
         $this->image->annotateimage($draw, $xPoint, $yPoint, 0, $string);
         
+        return $this;
+    }
+
+    public function writeFitWithFont(
+        string $text,
+        string $font,
+        int $fontSize,
+        array $color,
+        int $xPoint = 0,
+        int $yPoint = 0,
+        int $gravity = \Imagick::GRAVITY_CENTER
+    ): self {
+        $imagickPixel = new \ImagickPixel(sprintf('rgb(%d, %d, %d)', $color['red'], $color['green'], $color['blue']));
+
+        $draw = new \ImagickDraw();
+        $draw->setStrokeColor($imagickPixel);
+        $draw->setFillColor($imagickPixel);
+
+        $draw->setStrokeWidth(0);
+        $draw->setTextEncoding('UTF-8');
+        if ($gravity == \Imagick::GRAVITY_CENTER) {
+            $draw->setGravity($gravity);
+        }
+
+        $draw->setFont($font);
+        $totalHeight = 0;
+        $lineHeightRatio = 1;
+
+        $maxWidth = $this->width - 40;
+        $maxHeight = $this->height - 100;
+        // Run until we find a font size that doesn't exceed $max_height in pixels
+        while (0 == $totalHeight || $totalHeight > $maxHeight) {
+            // we're still over height, decrement font size and try again
+            if ($totalHeight > 0) {
+                $fontSize--;
+            }
+
+            $draw->setFontSize($fontSize);
+
+            // Calculate number of lines / line height
+            // Props users Sarke / BMiner: http://stackoverflow.com/questions/5746537/how-can-i-wrap-text-using-imagick-in-php-so-that-it-is-drawn-as-multiline-text
+            $words = preg_split('%\s%', $text, -1, PREG_SPLIT_NO_EMPTY);
+            $lines = array();
+            $i = 0;
+            $lineHeight = 0;
+
+            while (count($words) > 0) {
+                $metrics = $this->image->queryFontMetrics(
+                    $draw,
+                    implode(' ', array_slice($words, 0, ++$i))
+                );
+                $lineHeight = max($metrics['textHeight'], $lineHeight);
+
+                if ($metrics['textWidth'] > $maxWidth || count($words) < $i) {
+                    $lines[] = implode(' ', array_slice($words, 0, --$i));
+                    $words = array_slice($words, $i);
+                    $i = 0;
+                }
+            }
+
+            $totalHeight = count($lines) * $lineHeight * $lineHeightRatio;
+
+            if ($totalHeight === 0) {
+                return false; // don't run endlessly if something goes wrong
+            }
+        }
+        if ($gravity == \Imagick::GRAVITY_CENTER) {
+            $yPoint = intval($totalHeight / 2) * -1;
+        }
+
+        for ($i = 0; $i < count($lines); $i++) {
+            $pointText = $yPoint + ($i * $lineHeight * $lineHeightRatio);
+            $this->image->annotateImage(
+                $draw,
+                $xPoint,
+                $pointText,
+                0,
+                trim($lines[$i])
+            );
+        }
+
         return $this;
     }
 
