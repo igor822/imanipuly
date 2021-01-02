@@ -24,7 +24,7 @@ class ImagickExtension implements ExtensionInterface
 
     public function resize(int $newWidth, int $newHeight, string $option = 'auto'): self
     {
-        $this->image->resizeImage($newWidth, $newHeight, FILTER_SINC, 0);
+        $this->image->resizeImage($newWidth, $newHeight, \Imagick::FILTER_SINC, 0);
         
         return $this;
     }
@@ -68,7 +68,8 @@ class ImagickExtension implements ExtensionInterface
         int $fontSize,
         array $color,
         int $xPoint = 0,
-        int $yPoint = 0
+        int $yPoint = 0,
+        
     ): self {
         $imagickPixel = new \ImagickPixel(sprintf('rgb(%d, %d, %d)', $color['red'], $color['green'], $color['blue']));
         
@@ -78,6 +79,7 @@ class ImagickExtension implements ExtensionInterface
      
         $draw->setStrokeWidth(0);
         $draw->setFontSize($fontSize);
+        $draw->setGravity(\Imagick::GRAVITY_SOUTHWEST);
         
         $draw->setFont($font);
         $this->image->annotateimage($draw, $xPoint, $yPoint, 0, $string);

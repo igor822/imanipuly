@@ -49,4 +49,20 @@ class Imanipuly
     {
         return $this->extension->save($savePath, $type, $imageQuality);
     }
+    
+    public function resize(int $newWidth, int $newHeight, string $option = 'auto'): ExtensionInterface
+    {
+        return $this->extension->resize($newWidth, $newHeight, $option);
+    }
+
+    public function writeWithFont(
+        string $string,
+        string $font,
+        int $fontSize,
+        array $color,
+        int $xPoint = 0,
+        int $yPoint = 0
+    ): ExtensionInterface {
+        return $this->extension->writeWithFont($string, $font, $fontSize, $color, $xPoint, $yPoint);
+    }
 }
